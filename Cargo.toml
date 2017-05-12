@@ -1,6 +1,11 @@
 [package]
 name = "gh"
-version = "0.1.0"
+version = "0.0.1-SNAPSHOT"
 authors = ["penland365 <Jeffrey.N.Davis@gmail.com>"]
 
 [dependencies]
+clap = "2.24.1"
+curl = "0.4.6"
+git2 = "0.6"
+rustc-serialize = "^0.3"
+version = "2.0.1"
