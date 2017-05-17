@@ -1,17 +1,26 @@
 #[macro_use]
-extern crate version;
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
+
 extern crate curl;
 extern crate rustc_serialize;
 extern crate clap;
 
+#[macro_use]
+extern crate version;
+
 use clap::{App, AppSettings, Arg, SubCommand};
 use std::env;
 
+mod commands;
 mod config;
+mod GitHub;
 mod resources;
 
 fn main() {
     let matches = App::new("gh")
+        .subcommand(commands::orgs::SUBCOMMAND())
 	    .subcommand(SubCommand::with_name("config")
 								.about("View and Set GitHub Configuration")
 								.version(version!())
@@ -45,15 +54,8 @@ fn main() {
                 (_, _) => unreachable!()
             }
         },
+        ("orgs", Some(orgs_matches)) => commands::orgs::handle(orgs_matches),
         ("", None) => println!("NO SUBCOMMAND USED"),
         (_, _)     => unreachable!()
     }
-
-    //resources::function();
-
-    //let user = resources::users::get_user("pengwynn".to_string());
-    //println!("{}", user.login);
-    //
-
-
 }

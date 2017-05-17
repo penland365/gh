@@ -27,6 +27,28 @@ fn config_from_args(matches: &ArgMatches) -> Config {
     }
 }
 
+pub fn load_config() -> Config {
+    let credentials_path = {
+        let home_dir = get_home_dir();
+        let mut xs = home_dir;
+        xs.push(".config");
+        xs.push("gh");
+        xs.push("credentials");
+        xs
+    };
+    if !credentials_path.exists() {
+        panic!("no configuration found");
+    }
+    let file = match File::open(&credentials_path) {
+        Ok(f)  => f,
+        Err(e) => panic!("could not open credentials file {}", e)
+    };
+    let mut buf_reader = BufReader::new(file);
+    let mut contents = String::new();
+    buf_reader.read_to_string(&mut contents);
+    json::decode(&contents).unwrap()
+}
+
 pub fn show_config(matches: &ArgMatches) -> () {
     let credentials_path = {
         let home_dir = get_home_dir();
