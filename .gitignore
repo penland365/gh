@@ -2,5 +2,6 @@ target/
 **/*.rs.bk
 
 debug
+gh
 *.swp
 *.rustfmt
