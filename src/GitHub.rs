@@ -1,4 +1,4 @@
-use std::io::{stdout, Write};
+use std::io::{Read, stdout, Write};
 use std::str::from_utf8;
 use std::{option, result};
 use curl::easy::{Easy, List};
@@ -22,7 +22,7 @@ fn build_headers_no_auth() -> List {
     xs
 }
 
-fn get(token: &str, url: &str) -> Vec<u8> {
+pub fn get(token: &str, url: &str) -> Vec<u8> {
     let headers = build_headers(token);
     let mut handle = Easy::new();
     handle.http_headers(headers).unwrap();
@@ -45,6 +45,28 @@ fn get(token: &str, url: &str) -> Vec<u8> {
     //    Ok(t)  => t,
     //    Err(e) => "Oh noes!"
     //};
+}
+
+pub fn post(token: &str, url: &str, mut body: &[u8]) -> Vec<u8> {
+    let headers = build_headers(token);
+    let mut handle = Easy::new();
+    handle.http_headers(headers).unwrap();
+    handle.url(url).unwrap();
+    handle.post(true).unwrap();
+    handle.post_field_size(body.len() as u64).unwrap();
+    let mut data = Vec::new();
+    {
+        let mut transfer = handle.transfer();
+        transfer.read_function(|buf| {
+            Ok(body.read(buf).unwrap_or(0))
+        });
+        transfer.write_function(|new_data| {
+            data.extend_from_slice(new_data);
+            Ok(new_data.len())
+        }).unwrap();
+        transfer.perform().unwrap();
+    }
+    data
 }
 
 fn get_no_auth(url: &str) -> Vec<u8> {
@@ -80,7 +102,7 @@ pub fn get_user_public_orgs(user: &str) -> String {
     parse_json(&response).to_string()
 }
 
-fn parse_json(xs: &Vec<u8>) -> &str {
+pub fn parse_json(xs: &Vec<u8>) -> &str {
     match from_utf8(xs) {
         Ok(x)  => x,
         Err(_) => ""

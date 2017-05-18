@@ -1,4 +1,5 @@
 pub mod orgs;
+pub mod pullreqs;
 
 use rustc_serialize::json::as_pretty_json;
 

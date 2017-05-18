@@ -21,6 +21,7 @@ mod resources;
 fn main() {
     let matches = App::new("gh")
         .subcommand(commands::orgs::SUBCOMMAND())
+        .subcommand(commands::pullreqs::SUBCOMMAND())
 	    .subcommand(SubCommand::with_name("config")
 								.about("View and Set GitHub Configuration")
 								.version(version!())
@@ -55,6 +56,7 @@ fn main() {
             }
         },
         ("orgs", Some(orgs_matches)) => commands::orgs::handle(orgs_matches),
+        ("pullreq", Some(pullreq_matches)) => commands::pullreqs::handle(pullreq_matches),
         ("", None) => println!("NO SUBCOMMAND USED"),
         (_, _)     => unreachable!()
     }
