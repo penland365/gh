@@ -1,18 +1,6 @@
-//extern crate rustc_serialize;
-//extern crate serde;
-//extern crate serde_json;
-
-//use serde_json::{Value, Error};
-
-use std::io::{stdout, Write};
-use std::str::from_utf8;
-use curl::easy::{Easy, List};
-use rustc_serialize::Encodable;
-use rustc_serialize::json::{self, Encoder};
-
 // GitHub OrgSummary. See https://developer.github.com/v3/orgs/
 // A base GitHub User
-#[derive(RustcDecodable, RustcEncodable, Serialize, Deserialize)]
+#[derive(RustcEncodable, RustcDecodable, Serialize, Deserialize)]
 pub struct OrgSummary {
     pub login: String,
     pub id: u32,

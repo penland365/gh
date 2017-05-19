@@ -10,8 +10,7 @@ extern crate clap;
 #[macro_use]
 extern crate version;
 
-use clap::{App, AppSettings, Arg, SubCommand};
-use std::env;
+use clap::{App, Arg, SubCommand};
 
 mod commands;
 mod config;
@@ -21,6 +20,7 @@ mod resources;
 fn main() {
     let matches = App::new("gh")
         .subcommand(commands::orgs::SUBCOMMAND())
+        .subcommand(commands::pullreqs::SUBCOMMAND())
 	    .subcommand(SubCommand::with_name("config")
 								.about("View and Set GitHub Configuration")
 								.version(version!())
@@ -55,6 +55,7 @@ fn main() {
             }
         },
         ("orgs", Some(orgs_matches)) => commands::orgs::handle(orgs_matches),
+        ("pullreq", Some(pullreq_matches)) => commands::pullreqs::handle(pullreq_matches),
         ("", None) => println!("NO SUBCOMMAND USED"),
         (_, _)     => unreachable!()
     }
