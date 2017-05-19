@@ -2,17 +2,12 @@ extern crate clap;
 extern crate rustc_serialize;
 
 use std::io::prelude::*;
-use std::fmt;
-use std::env;
-use std::fs;
+use std::{env, fs};
 use std::fs::{File, OpenOptions};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use clap::ArgMatches;
 use std::io::{BufReader, BufWriter, Write};
-use std::str::from_utf8;
-use std::{option, result};
-use rustc_serialize::Encodable;
-use rustc_serialize::json::{self, Encoder, as_pretty_json};
+use rustc_serialize::json;
 
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Config {
@@ -45,7 +40,7 @@ pub fn load_config() -> Config {
     };
     let mut buf_reader = BufReader::new(file);
     let mut contents = String::new();
-    buf_reader.read_to_string(&mut contents);
+    let _ = buf_reader.read_to_string(&mut contents);
     json::decode(&contents).unwrap()
 }
 
@@ -67,7 +62,7 @@ pub fn show_config(matches: &ArgMatches) -> () {
     };
     let mut buf_reader = BufReader::new(file);
     let mut contents = String::new();
-    buf_reader.read_to_string(&mut contents);
+    let _ = buf_reader.read_to_string(&mut contents);
     let decoded: Config = json::decode(&contents).unwrap();
     match matches.value_of("format") {
         None => print_config(&decoded),
@@ -81,8 +76,6 @@ pub fn show_config(matches: &ArgMatches) -> () {
 }
 
 fn print_config(config: &Config) -> () {
-    let login_length = config.username.len();
-    let access_token_length = config.access_token.len();
     println!("{0: <10} {1: <40}", "login", "access token");
     println!("{0: <10} {1: <10}", config.username, config.access_token);
 }
@@ -117,7 +110,7 @@ pub fn set_config(matches: &ArgMatches) -> () {
         let x: usize = st.as_bytes().len();
         x as u64
     };
-    file.set_len(len);
+    let _ = file.set_len(len);
     println!("Completed set_config!");
 }
 
@@ -139,7 +132,7 @@ fn ensure_config_dir_exists(home_path: PathBuf) -> PathBuf {
         xs
     };
     if !config_path.exists() {
-        fs::create_dir(&config_path);
+        let _ = fs::create_dir(&config_path);
     }
     config_path
 }
@@ -154,7 +147,7 @@ fn ensure_gh_dir_exists(config_path: PathBuf) -> PathBuf {
         xs
     };
     if !gh_path.exists() {
-        fs::create_dir(&gh_path);
+        let _ = fs::create_dir(&gh_path);
     }
     gh_path
 }

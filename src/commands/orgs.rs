@@ -1,13 +1,8 @@
-use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
+use clap::{App, Arg, ArgMatches, SubCommand};
 use config;
 use GitHub;
-
-use serde_json;
-
-use rustc_serialize::Encodable;
-use rustc_serialize::json::{as_pretty_json, self, Encoder};
+use rustc_serialize::json;
 use resources::orgs::OrgSummary;
-use commands::print_pretty_json;
 
 pub fn SUBCOMMAND<'a, 'b>() -> App<'a, 'b> {
     SubCommand::with_name("orgs")
@@ -50,13 +45,12 @@ fn list_user_orgs(matches: &ArgMatches) -> () {
     let decoded: Vec<OrgSummary> = json::decode(&json_response).unwrap();
     match matches.value_of("format") {
         None => print_user_orgs(&decoded),
-        Some(format) => print_pretty_json()
-        //Some(format) => if format == "json" {
-        //    let json = json::as_pretty_json(&decoded);
-        //    println!("{}", json);
-        //} else {
-        //    panic!("unknown format request {}", format);
-        //}
+        Some(format) => if format == "json" {
+            let json = json::as_pretty_json(&decoded);
+            println!("{}", json);
+        } else {
+            panic!("unknown format request {}", format);
+        }
     }
 }
 

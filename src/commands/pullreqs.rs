@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
+use clap::{App, Arg, ArgMatches, SubCommand};
 use config;
 use GitHub;
 
@@ -62,8 +62,8 @@ fn list_pull_reqs(matches: &ArgMatches) -> () {
         "/pulls";
    let config = config::load_config();
    let response = GitHub::get(&config.access_token, &url);
-
-        //None       => GitHub::get_user_orgs(&config::load_config()),
+    let st = GitHub::parse_json(&response);
+    println!("{}", st);
 }
 
 #[derive(Serialize, Deserialize)]

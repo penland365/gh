@@ -1,24 +1,22 @@
-use std::io::{Read, stdout, Write};
+//use std::io::{Read, stdout, Write};
+use std::io::Read;
 use std::str::from_utf8;
-use std::{option, result};
 use curl::easy::{Easy, List};
-use rustc_serialize::Encodable;
-use rustc_serialize::json::{self, Encoder};
 use config::Config;
 
 fn build_headers(token: &str) -> List {
     let mut xs = List::new();
-    xs.append("User-Agent: gh/0.0.1-SNAPSHOT");
-    xs.append("Accept: application/vnd.github.v3+json");
+    let _ = xs.append("User-Agent: gh/0.0.1-SNAPSHOT");
+    let _ = xs.append("Accept: application/vnd.github.v3+json");
     let auth_header = format!("Authorization: token {}", token);
-    xs.append(&auth_header);
+    let _ = xs.append(&auth_header);
     xs
 }
 
 fn build_headers_no_auth() -> List {
     let mut xs = List::new();
-    xs.append("User-Agent: gh/0.0.1-SNAPSHOT");
-    xs.append("Accept: application/vnd.github.v3+json");
+    let _ = xs.append("User-Agent: gh/0.0.1-SNAPSHOT");
+    let _ = xs.append("Accept: application/vnd.github.v3+json");
     xs
 }
 
@@ -57,10 +55,10 @@ pub fn post(token: &str, url: &str, mut body: &[u8]) -> Vec<u8> {
     let mut data = Vec::new();
     {
         let mut transfer = handle.transfer();
-        transfer.read_function(|buf| {
+        let _ = transfer.read_function(|buf| {
             Ok(body.read(buf).unwrap_or(0))
         });
-        transfer.write_function(|new_data| {
+        let _ = transfer.write_function(|new_data| {
             data.extend_from_slice(new_data);
             Ok(new_data.len())
         }).unwrap();
@@ -77,7 +75,7 @@ fn get_no_auth(url: &str) -> Vec<u8> {
     let mut data = Vec::new();
     {
         let mut transfer = handle.transfer();
-        transfer.write_function(|new_data| {
+        let _ = transfer.write_function(|new_data| {
             data.extend_from_slice(new_data);
             Ok(new_data.len())
         }).unwrap();

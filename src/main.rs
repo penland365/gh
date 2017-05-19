@@ -10,8 +10,7 @@ extern crate clap;
 #[macro_use]
 extern crate version;
 
-use clap::{App, AppSettings, Arg, SubCommand};
-use std::env;
+use clap::{App, Arg, SubCommand};
 
 mod commands;
 mod config;
