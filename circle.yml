@@ -1,0 +1,23 @@
+machine:
+  pre:
+    - curl https://sh.rustup.rs -sSf | sh -s -- -v -y
+    - sed -i 's/github/git-non-exist-hub/g' ~/.gitconfig
+  environment:
+    RUST_UP: $HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/
+    PRE_RUST_UP_PATH: $PATH
+    PATH: $RUST_UP:$PRE_RUST_UP_PATH
+  post:
+    - cargo -V
+    - rustc -V
+
+dependencies:
+  override:
+    - cargo update
+
+compile:
+  override:
+    - cargo build --release
+
+test:
+  override:
+    - cargo test
