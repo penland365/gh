@@ -7,9 +7,11 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
-extern crate curl;
 extern crate rustc_serialize;
 extern crate clap;
+
+extern crate hyper;
+extern crate hyper_native_tls;
 
 #[macro_use]
 extern crate version;
@@ -18,7 +20,7 @@ use clap::{App, Arg, SubCommand};
 
 mod commands;
 mod config;
-mod GitHub;
+mod git_hub;
 mod resources;
 
 fn main() {
