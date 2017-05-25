@@ -14,7 +14,7 @@ use std::str::from_utf8;
 
 // GitHub OrgSummary. See https://developer.github.com/v3/orgs/
 // A base GitHub User
-#[derive(RustcEncodable, RustcDecodable, Serialize, Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct OrgSummary {
     pub login: String,
     pub id: u32,

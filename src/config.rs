@@ -1,15 +1,16 @@
-extern crate clap;
-extern crate rustc_serialize;
-
 use std::io::prelude::*;
 use std::{env, fs};
 use std::fs::{File, OpenOptions};
 use std::path::PathBuf;
 use clap::ArgMatches;
 use std::io::{BufReader, BufWriter, Write};
-use rustc_serialize::json;
 
-#[derive(RustcDecodable, RustcEncodable)]
+use evidence::json_ops;
+
+use serde_json;
+use serde_json::Error;
+
+#[derive(Serialize, Deserialize)]
 pub struct Config {
     pub username: String,
     pub access_token: String
@@ -50,33 +51,40 @@ pub fn load_config() -> Config {
     let mut buf_reader = BufReader::new(file);
     let mut contents = String::new();
     let _ = buf_reader.read_to_string(&mut contents);
-    json::decode(&contents).unwrap()
+    let config: Config = json_ops::from_str_or_die(&contents,
+                                                   "Unable to parse Credentials file!");
+    config
 }
 
 pub fn show_config(matches: &ArgMatches) -> () {
-    let credentials_path = {
-        let home_dir = get_home_dir();
-        let mut xs = home_dir;
-        xs.push(".config");
-        xs.push("gh");
-        xs.push("credentials");
-        xs
-    };
-    if !credentials_path.exists() {
-        panic!("no configuration found");
-    }
-    let file = match File::open(&credentials_path) {
-        Ok(f)  => f,
-        Err(e) => panic!("could not open credentials file {}", e)
-    };
-    let mut buf_reader = BufReader::new(file);
-    let mut contents = String::new();
-    let _ = buf_reader.read_to_string(&mut contents);
-    let decoded: Config = json::decode(&contents).unwrap();
+    //let credentials_path = {
+    //    let home_dir = get_home_dir();
+    //    let mut xs = home_dir;
+    //    xs.push(".config");
+    //    xs.push("gh");
+    //    xs.push("credentials");
+    //    xs
+    //};
+    //if !credentials_path.exists() {
+    //    panic!("no configuration found");
+    //}
+    //let file = match File::open(&credentials_path) {
+    //    Ok(f)  => f,
+    //    Err(e) => panic!("could not open credentials file {}", e)
+    //};
+    //let mut buf_reader = BufReader::new(file);
+    //let mut contents = String::new();
+    //let _ = buf_reader.read_to_string(&mut contents);
+    //let decoded: Config = json::decode(&contents).unwrap();
+    let config = load_config();
     match matches.value_of("format") {
-        None => print_config(&decoded),
+        None => print_config(&config),
         Some(format) => if format == "json" {
-            let config_json = json::as_pretty_json(&decoded);
+            //let config_json = json::as_pretty_json(&decoded);
+            let config_json = match serde_json::to_string_pretty(&config) {
+                Ok(json) => json,
+                Err(_)   => panic!("Error serializing config json"),
+            };
             println!("{}", config_json);
         } else {
             panic!("unknown format request {}", format);
@@ -91,7 +99,10 @@ fn print_config(config: &Config) -> () {
 
 pub fn set_config(matches: &ArgMatches) -> () {
     let config = config_from_args(matches);
-    let config_json = json::as_pretty_json(&config);
+    let config_json = match serde_json::to_string_pretty(&config) {
+        Ok(json) => json,
+        Err(_)   => panic!("Error serializing config json"),
+    };
     let st = config_json.to_string();
     let home_dir = get_home_dir();
     let config_dir = ensure_config_dir_exists(home_dir);
