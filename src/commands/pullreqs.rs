@@ -1,6 +1,5 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 use config;
-use GitHub;
 
 use serde_json;
 
@@ -53,17 +52,17 @@ pub fn handle(matches: &ArgMatches) -> () {
 }
 
 fn list_pull_reqs(matches: &ArgMatches) -> () {
-   let owner = matches.value_of("owner").unwrap().to_string();
-   let repo = matches.value_of("repo").unwrap().to_string();
-   let url = "https://api.github.com/repos/".to_string() +
-        &owner +
-        "/" +
-        &repo +
-        "/pulls";
-   let config = config::load_config();
-   let response = GitHub::get(&config.access_token, &url);
-    let st = GitHub::parse_json(&response);
-    println!("{}", st);
+   //let owner = matches.value_of("owner").unwrap().to_string();
+   //let repo = matches.value_of("repo").unwrap().to_string();
+   //let url = "https://api.github.com/repos/".to_string() +
+   //     &owner +
+   //     "/" +
+   //     &repo +
+   //     "/pulls";
+   //let config = config::load_config();
+   //let response = GitHub::get(&config.access_token, &url);
+   // let st = GitHub::parse_json(&response);
+   // println!("{}", st);
 }
 
 #[derive(Serialize, Deserialize)]
@@ -74,25 +73,25 @@ struct NewPullRequest {
 }
 
 fn create_pull_request(matches: &ArgMatches) -> () {
-   let owner = matches.value_of("owner").unwrap().to_string();
-   let repo = matches.value_of("repo").unwrap().to_string();
-   let url = "https://api.github.com/repos/".to_string() +
-        &owner +
-        "/" +
-        &repo +
-        "/pulls";
-   let pull_req = NewPullRequest {
-        title: matches.value_of("title").unwrap().to_string(),
-        head: matches.value_of("head").unwrap().to_string(),
-        base: matches.value_of("base").unwrap().to_string()
-    };
-   let json_str = match serde_json::to_string(&pull_req) {
-       Ok(x) => x,
-       Err(_) => panic!("Error seriliazing pull request")
-    };
-   let bytes = json_str.as_bytes();
-   let config = config::load_config();
-   let response = GitHub::post(&config.access_token, &url, bytes);
-    let st = GitHub::parse_json(&response);
-    println!("{}", st);
+   //let owner = matches.value_of("owner").unwrap().to_string();
+   //let repo = matches.value_of("repo").unwrap().to_string();
+   //let url = "https://api.github.com/repos/".to_string() +
+   //     &owner +
+   //     "/" +
+   //     &repo +
+   //     "/pulls";
+   //let pull_req = NewPullRequest {
+   //     title: matches.value_of("title").unwrap().to_string(),
+   //     head: matches.value_of("head").unwrap().to_string(),
+   //     base: matches.value_of("base").unwrap().to_string()
+   // };
+   //let json_str = match serde_json::to_string(&pull_req) {
+   //    Ok(x) => x,
+   //    Err(_) => panic!("Error seriliazing pull request")
+   // };
+   //let bytes = json_str.as_bytes();
+   //let config = config::load_config();
+   //let response = GitHub::post(&config.access_token, &url, bytes);
+   // let st = GitHub::parse_json(&response);
+   // println!("{}", st);
 }

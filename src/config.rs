@@ -15,6 +15,15 @@ pub struct Config {
     pub access_token: String
 }
 
+impl Clone for Config {
+    fn clone(&self) -> Config {
+        Config {
+            username: self.username.clone(),
+            access_token: self.access_token.clone()
+        }
+    }
+}
+
 fn config_from_args(matches: &ArgMatches) -> Config {
     Config {
         username: matches.value_of("username").unwrap().to_string(),
