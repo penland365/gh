@@ -7,7 +7,6 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
-extern crate rustc_serialize;
 extern crate clap;
 
 extern crate hyper;
@@ -22,6 +21,7 @@ mod commands;
 mod config;
 mod git_hub;
 mod resources;
+mod evidence;
 
 fn main() {
     let matches = App::new("gh")

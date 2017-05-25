@@ -1,8 +1,9 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 use config;
 use git_hub::{GitHubResponse, orgs};
-use rustc_serialize::json;
-use resources::orgs::OrgSummary;
+
+use serde_json;
+use serde_json::Error;
 
 pub fn SUBCOMMAND<'a, 'b>() -> App<'a, 'b> {
     SubCommand::with_name("orgs")
@@ -36,10 +37,10 @@ pub fn handle(matches: &ArgMatches) -> () {
 mod list {
 use clap::ArgMatches;
 use config::load_config;
+use evidence::json_ops;
 use git_hub::{GitHubResponse, orgs};
 use hyper::status::StatusCode;
-use rustc_serialize::json;
-use resources::orgs::OrgSummary;
+use git_hub::orgs::OrgSummary;
 
     #[cfg(windows)] pub const NL: &'static str = "\r\n";
     #[cfg(not(windows))] pub const NL: &'static str = "\n";
@@ -75,9 +76,9 @@ use resources::orgs::OrgSummary;
     }
 
     fn format_output(body: String, is_json: bool) -> String {
-        let orgs: Vec<OrgSummary> = json::decode(&body).unwrap();
+        let orgs: Vec<OrgSummary> = json_ops::from_str_or_die(&body, DESERIALIZE_ORG_SUMMARY);
         if is_json {
-            json::as_pretty_json(&orgs).to_string()
+            json_ops::to_pretty_json_or_die(&orgs, SERIALIZE_ORG_SUMMARY)
         } else {
             let mut output = String::with_capacity(100);
             let header = format!("{0: <10} {1: <10} {2: <45} {3: <30}", "login", "id", "url", "description");
@@ -92,6 +93,9 @@ use resources::orgs::OrgSummary;
             output
         }
     }
+
+    const DESERIALIZE_ORG_SUMMARY: &'static str = "Error deserializing GitHub Organization Summary JSON.";
+    const SERIALIZE_ORG_SUMMARY: &'static str = "Error serializing GitHub Organization Summary JSON.";
 
     const UNAUTHORIZED: &'static str = "401 Unauthorized. Bad Credentials. See https://developer.github.com/v3";
     const FORBIDDEN: &'static str = "403 Forbidden. Does your OAuth token have suffecient scope? A minimum of `user` or `read:org` is required. See https://developer.github.com/v3/orgs/";
