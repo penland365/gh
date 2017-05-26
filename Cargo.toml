@@ -1,6 +1,6 @@
 [package]
 name = "gh"
-version = "0.0.2-SNAPSHOT"
+version = "0.0.3-SNAPSHOT"
 authors = ["penland365 <Jeffrey.N.Davis@gmail.com>"]
 
 [dependencies]
