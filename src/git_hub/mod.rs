@@ -2,12 +2,15 @@ use config::Config;
 
 use hyper::client::Request;
 use hyper::header::{Authorization, Bearer, Headers, Accept, qitem, UserAgent};
+use hyper::method::Method;
 use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
 use hyper::net::{Fresh, HttpsConnector};
+use hyper::Url;
 use hyper::status::StatusCode;
 use hyper_native_tls::NativeTlsClient;
 
 pub mod orgs;
+pub mod users;
 
 const URL: &'static str = "https://api.github.com";
 
@@ -60,28 +63,85 @@ pub fn connector() -> HttpsConnector<NativeTlsClient> {
     HttpsConnector::new(tls)
 }
 
+// Takes the endpoint in string form, constructs the hyper::Url.
+// If construction of the URL fails, we expects to panic! and die
+pub fn build_url_or_die(endpoint: &str) -> Url {
+    match Url::parse(endpoint) {
+        Ok(url) => url,
+        Err(x)  => {
+            let panic_message = format!("{} {} {}",
+                                        URL_DIE_MESSAGE,
+                                        endpoint,
+                                        x);
+            panic!(panic_message);
+        }
+    }
+}
+
+const URL_DIE_MESSAGE: &'static str = "Fatal error parsing endpoint ";
+
+// Takes a hyper::Method, hyper::Url, hyper::Connector, and Config.
+// Builds a hyper::Request<Fresh> or dies if there is a failure
+pub fn build_authed_request_or_die(method: &Method,
+                                   url: &Url,
+                                   connector: &HttpsConnector<NativeTlsClient>,
+                                   config: &Config)
+                                   -> Request<Fresh> {
+    let mut request = match Request::with_connector(method.clone(),
+                                                    url.clone(),
+                                                    connector) {
+        Ok(req) => req,
+        Err(x)  => {
+            let panic_message = format!("Fatal error building {} Request for url {}. {}",
+                                        method,
+                                        url,
+                                        x);
+            panic!(panic_message);
+        },
+    };
+    add_headers(request.headers_mut(), config);
+    request
+}
+
 #[cfg(test)]
 mod tests {
-use hyper::header::{Accept, Authorization, Bearer, Headers, Host, qitem, UserAgent};
-use hyper::Url;
-use hyper::net::HttpsConnector;
-use hyper_native_tls::NativeTlsClient;
-use hyper::net::Fresh;
-use hyper::client::Request;
-use hyper::method::Method;
-use super::{add_auth_header, add_base_headers, add_headers};
-use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
 use config::Config;
 
-    fn build_test_request() -> Request<Fresh> {
-        let ssl = NativeTlsClient::new().unwrap();
-        let connector = HttpsConnector::new(ssl);
-        let url = match Url::parse("https://api.github.com") {
+use hyper::client::Request;
+use hyper::header::{Accept, Authorization, Bearer, Headers, Host, qitem, UserAgent};
+use hyper::method::Method;
+use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
+use hyper::net::{Fresh, HttpsConnector};
+use hyper::Url;
+use hyper_native_tls::NativeTlsClient;
+use super::{add_auth_header, add_base_headers, add_headers};
+
+    const TEST_URL: &'static str = "https://api.github.com";
+    fn build_test_url(endpoint: &str) -> Url {
+        match Url::parse(endpoint) {
             Ok(url) => url,
             Err(_)  => panic!("Could not deconstruct test API URL."),
+        }
+    }
+
+    fn build_test_connector() -> HttpsConnector<NativeTlsClient> {
+        let ssl = match NativeTlsClient::new(){
+            Ok(client) => client,
+            Err(x)     => panic!("Fatal error creating test NativeTlsClient. {}", x),
         };
-        let req = Request::with_connector(Method::Get, url, &connector);
-        req.unwrap()
+        HttpsConnector::new(ssl)
+    }
+
+    fn build_test_request(method: &Method,
+                          url: &Url,
+                          connector: &HttpsConnector<NativeTlsClient>)
+                          -> Request<Fresh> {
+        match Request::with_connector(method.clone(),
+                                      url.clone(),
+                                      connector) {
+            Ok(request) => request,
+            Err(x)      => panic!("Fatal error creating test Request. {}", x),
+        }
     }
 
     fn build_test_config() -> Config {
@@ -93,7 +153,9 @@ use config::Config;
 
     #[test]
     fn test_add_headers() {
-        let mut request = build_test_request();
+        let mut request = build_test_request(&Method::Get,
+                                             &build_test_url(TEST_URL),
+                                             &build_test_connector());
         let config = build_test_config();
         add_headers(request.headers_mut(), &config);
         let headers = request.headers();
@@ -109,7 +171,9 @@ use config::Config;
 
     #[test]
     fn test_add_base_headers() {
-        let mut request = build_test_request();
+        let mut request = build_test_request(&Method::Get,
+                                             &build_test_url(TEST_URL),
+                                             &build_test_connector());
         add_base_headers(request.headers_mut());
         let headers = request.headers();
 
@@ -123,7 +187,9 @@ use config::Config;
 
     #[test]
     fn test_add_auth_header() {
-        let mut request = build_test_request();
+        let mut request = build_test_request(&Method::Get,
+                                             &build_test_url(TEST_URL),
+                                             &build_test_connector());
         let config = build_test_config();
         add_auth_header(request.headers_mut(), &config);
         let headers = request.headers();
@@ -133,6 +199,111 @@ use config::Config;
 
         test_host_header(headers);
         test_authorization_header(headers, &config);
+    }
+
+    #[test]
+    fn test_build_url_or_die_success() {
+        let endpoint = "https://api.github.com";
+        let result   = super::build_url_or_die(endpoint);
+        let url      = match Url::parse(endpoint) {
+            Ok(url) => url,
+            Err(x)  => panic!(x),
+        };
+        assert_eq!(result, url);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_build_url_or_die_panic() {
+        let endpoint = "this is not a valid url";
+        let url      = match Url::parse(endpoint) {
+            Ok(url) => url,
+            Err(x)  => panic!(x),
+        };
+    }
+
+    mod test_build_authed_request_or_die {
+    use hyper::method::Method;
+
+        const TEST_URL: &'static str = super::TEST_URL;
+
+        #[test]
+        fn test_method() {
+            let req = super::build_test_request(&Method::Get,
+                                                &super::build_test_url(TEST_URL),
+                                                &super::build_test_connector());
+            let result = super::super::build_authed_request_or_die(&Method::Get,
+                                                                   &super::build_test_url(TEST_URL),
+                                                                   &super::build_test_connector(),
+                                                                   &super::build_test_config());
+            assert_eq!(req.method(), result.method());
+        }
+
+        #[test]
+        #[should_panic]
+        fn test_method_panic() {
+            let req = super::build_test_request(&Method::Get,
+                                                &super::build_test_url(TEST_URL),
+                                                &super::build_test_connector());
+            let result = super::super::build_authed_request_or_die(&Method::Post,
+                                                                   &super::build_test_url(TEST_URL),
+                                                                   &super::build_test_connector(),
+                                                                   &super::build_test_config());
+            assert_eq!(req.method(), result.method());
+        }
+
+        #[test]
+        fn test_url() {
+            let req = super::build_test_request(&Method::Get,
+                                                &super::build_test_url(TEST_URL),
+                                                &super::build_test_connector());
+            let result = super::super::build_authed_request_or_die(&Method::Get,
+                                                                   &super::build_test_url(TEST_URL),
+                                                                   &super::build_test_connector(),
+                                                                   &super::build_test_config());
+            assert_eq!(req.url, result.url);
+        }
+
+        #[test]
+        #[should_panic]
+        fn test_url_panic() {
+            let req = super::build_test_request(&Method::Get,
+                                                &super::build_test_url(TEST_URL),
+                                                &super::build_test_connector());
+            let result = super::super::build_authed_request_or_die(&Method::Get,
+                                                                   &super::build_test_url("https://www.github.com"),
+                                                                   &super::build_test_connector(),
+                                                                   &super::build_test_config());
+            assert_eq!(req.url, result.url);
+        }
+
+        #[test]
+        fn test_headers() {
+            let mut req = super::build_test_request(&Method::Get,
+                                                &super::build_test_url(TEST_URL),
+                                                &super::build_test_connector());
+            let result = super::super::build_authed_request_or_die(&Method::Get,
+                                                                   &super::build_test_url(TEST_URL),
+                                                                   &super::build_test_connector(),
+                                                                   &super::build_test_config());
+
+            super::super::add_headers(req.headers_mut(), &super::build_test_config());
+            assert_eq!(req.headers(), result.headers());
+        }
+
+        #[test]
+        #[should_panic]
+        fn test_headers_panic() {
+            let req = super::build_test_request(&Method::Get,
+                                                &super::build_test_url(TEST_URL),
+                                                &super::build_test_connector());
+            let result = super::super::build_authed_request_or_die(&Method::Get,
+                                                                   &super::build_test_url(TEST_URL),
+                                                                   &super::build_test_connector(),
+                                                                   &super::build_test_config());
+
+            assert_eq!(req.headers(), result.headers());
+        }
     }
 
     fn test_host_header(headers: &Headers) -> () {

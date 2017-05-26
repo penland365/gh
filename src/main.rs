@@ -27,6 +27,7 @@ fn main() {
     let matches = App::new("gh")
         .subcommand(commands::orgs::SUBCOMMAND())
         .subcommand(commands::pullreqs::SUBCOMMAND())
+        .subcommand(commands::users::sub_command())
 	    .subcommand(SubCommand::with_name("config")
 								.about("View and Set GitHub Configuration")
 								.version(version!())
@@ -60,7 +61,8 @@ fn main() {
                 (_, _) => unreachable!()
             }
         },
-        ("orgs", Some(orgs_matches)) => commands::orgs::handle(orgs_matches),
+        ("orgs", Some(orgs_matches))       => commands::orgs::handle(orgs_matches),
+        ("users", Some(users_matches))     => commands::users::handle(users_matches),
         ("pullreq", Some(pullreq_matches)) => commands::pullreqs::handle(pullreq_matches),
         ("", None) => println!("NO SUBCOMMAND USED"),
         (_, _)     => unreachable!()
