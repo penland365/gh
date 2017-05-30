@@ -133,9 +133,12 @@ fn get_body_length(headers: &Headers) -> usize {
 pub fn read_utf8_body(mut response: Response) -> Option<String> {
     let length = get_body_length(&response.headers);
     if length > 0 {
-        let mut body: Vec<u8> = Vec::with_capacity(length);
-        let x = response.read_exact(&mut body).unwrap();
-        Some(String::from_utf8_lossy(&body).into_owned())
+        let mut buffer = String::with_capacity(length);
+        let num_bytes = match response.read_to_string(&mut buffer) {
+            Ok(x)  => x,
+            Err(e) => panic!("Fatal error reading response body {}", e),
+        };
+        Some(buffer)
     } else {
         None
     }

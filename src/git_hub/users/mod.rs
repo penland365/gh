@@ -112,35 +112,58 @@ use hyper::net::Fresh;
         }
     }
 }
-// GET /users/:username . GitHub public user information. See
-// https://developer.github.com/v3/users/#get-a-single-user
-// for more information.
-//pub fn get_user(username: &str, config: &Config) -> GitHubResponse {
-//    let endpoint  = build_get_user_endpoint(username);
-//    let url       = git_hub::build_url_or_die(&endpoint);
-//    let connector = git_hub::connector();
-//    let request = git_hub::build_authed_request_or_die(&Method::Get,
-//                                         &url,
-//                                         &connector,
-//                                         config);
-//
-    //let request = build_get_user_request(username, config);
-    //let mut response = git_hub::start_and_send_request(request);
-    //let body = git_hub::read_body(response);
-    //GitHubResponse::from_response(response, body)
 
-    //let mut response = request.start().unwrap().send().unwrap();
-    //let mut body = vec![];
-    //match response.read_to_end(&mut body){
-    //    Ok(x)  => x,
-    //    Err(_) => panic!("oh noes"),
-    //}
-    //let s: String = String::from_utf8_lossy(&body).into_owned();
-    //GitHubResponse.from_response(response, Some(s))
-    //let github_response = GitHubResponse {
-    //    status: response.status,
-    //    headers: response.headers.clone(),
-    //    body: Some(s),
-    //};
-    //github_response
-//}
+pub mod get_authed_user {
+use config::Config;
+use git_hub;
+use git_hub::GitHubResponse;
+use hyper::client::Request;
+use hyper::method::Method;
+use hyper::net::Fresh;
+
+    // GET /user. The authenticated GitHub user private information. See
+    // https://developer.github.com/v3/users/#get-the-authenticated-user
+    // for more information.
+    pub fn get(config: &Config) -> GitHubResponse {
+        let request      = build_request(config);
+        let mut response = git_hub::start_and_send_request(request);
+        GitHubResponse {
+            status:  response.status.clone(),
+            headers: response.headers.clone(),
+            body:    git_hub::read_json_body(response),
+        }
+    }
+
+    const AUTH_USER_URL: &'static str = "https://api.github.com/user";
+
+    // Takes the username and Config, builds a valid
+    // hyper::Request<Fresh>
+    fn build_request(config: &Config) -> Request<Fresh> {
+        let url       = git_hub::build_url_or_die(AUTH_USER_URL);
+        let connector = git_hub::connector();
+        git_hub::build_authed_request_or_die(&Method::Get,
+                                             &url,
+                                             &connector,
+                                             config)
+    }
+
+    #[cfg(test)]
+    mod tests {
+    use config::Config;
+    use git_hub;
+
+        #[test]
+        fn test_build_request() {
+            let request = super::build_request(&build_test_config());
+            let url = git_hub::build_url_or_die(super::AUTH_USER_URL);
+            assert_eq!(request.url, url);
+        }
+
+        fn build_test_config() -> Config {
+            Config {
+                username: "octocat".to_owned(),
+                access_token: "abcdefg1234567".to_owned()
+            }
+        }
+    }
+}
