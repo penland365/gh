@@ -3,6 +3,7 @@ use config;
 use git_hub::{GitHubResponse, orgs};
 
 use serde_json;
+use serde_json::Value as Json;
 use serde_json::Error;
 
 pub fn SUBCOMMAND<'a, 'b>() -> App<'a, 'b> {
@@ -41,6 +42,7 @@ use evidence::json_ops;
 use git_hub::{GitHubResponse, orgs};
 use hyper::status::StatusCode;
 use git_hub::orgs::OrgSummary;
+use serde_json::Value as Json;
 
     #[cfg(windows)] pub const NL: &'static str = "\r\n";
     #[cfg(not(windows))] pub const NL: &'static str = "\n";
@@ -64,7 +66,7 @@ use git_hub::orgs::OrgSummary;
             StatusCode::Unauthorized => UNAUTHORIZED.to_owned(),
             StatusCode::Ok           => match response.body {
                 None           => build_200_ok_no_string_body_output(),
-                Some(ref body) => format_output(body.to_owned(), is_json),
+                Some(ref body) => format_output(body, is_json),
             },
             x                        => format!("Unexpected Http Response Code {}", x)
         }
@@ -75,8 +77,8 @@ use git_hub::orgs::OrgSummary;
                 StatusCode::Ok)
     }
 
-    fn format_output(body: String, is_json: bool) -> String {
-        let orgs: Vec<OrgSummary> = json_ops::from_str_or_die(&body, DESERIALIZE_ORG_SUMMARY);
+    fn format_output(body: &Json, is_json: bool) -> String {
+        let orgs: Vec<OrgSummary> = json_ops::from_json_or_die(body, DESERIALIZE_ORG_SUMMARY);
         if is_json {
             json_ops::to_pretty_json_or_die(&orgs, SERIALIZE_ORG_SUMMARY)
         } else {

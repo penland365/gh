@@ -23,9 +23,9 @@ pub fn sub_command<'a, 'b>() -> App<'a, 'b> {
 
 pub fn handle(matches: &ArgMatches) -> () {
     match matches.subcommand() {
-        ("get", Some(get_matches))  => get::handle(get_matches),
-        ("", None)                   => println!("No subcommand was used for users"),
-        (_, _)                       => unreachable!()
+        ("get", Some(get_matches)) => get::handle(get_matches),
+        ("", None)                 => println!("No subcommand was used for users"),
+        (_, _)                     => unreachable!()
     }
 }
 
@@ -36,6 +36,6 @@ use git_hub::{GitHubResponse, users};
 //use git_hub::users::OrgSummary;
 
     pub fn handle(matches: &ArgMatches) -> () {
-//        let response = users::
+        let response = users::get_single_user::get_user("penland365", &load_config());
     }
 }

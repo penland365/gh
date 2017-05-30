@@ -2,8 +2,17 @@
 // to encapsulate common behaviour
 pub mod json_ops {
 use serde_json;
+use serde_json::Value as Json;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
+
+    pub fn from_json_or_die<T: DeserializeOwned>(j: &Json, error_msg: &str) -> T {
+        let t: T = match serde_json::from_value(j.clone()) {
+            Ok(t)  => t,
+            Err(e) => panic!("{} {}", error_msg, e),
+        };
+        t
+    }
 
     pub fn from_str_or_die<T: DeserializeOwned>
         (s: &str, error_msg: &str) -> T {

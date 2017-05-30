@@ -40,7 +40,7 @@ pub struct PublicUser {
 	updated_at: String
 }
 
-mod get_single_user {
+pub mod get_single_user {
 use config::Config;
 use git_hub;
 use git_hub::GitHubResponse;
@@ -51,12 +51,15 @@ use hyper::net::Fresh;
     // GET /users/:username . GitHub public user information. See
     // https://developer.github.com/v3/users/#get-a-single-user
     // for more information.
-    //pub fn get_user(username: &str, config: &Config) -> GitHubResponse {
-    //    let request      = build_get_user_request(username, config);
-    //    let mut response = git_hub::start_and_send_request(request);
-    //    let body         = git_hub::read_body(response);
-    //    GitHubResponse::from_response(response, body)
-    //}
+    pub fn get_user(username: &str, config: &Config) -> GitHubResponse {
+        let request      = build_get_user_request(username, config);
+        let mut response = git_hub::start_and_send_request(request);
+        GitHubResponse {
+            status:  response.status.clone(),
+            headers: response.headers.clone(),
+            body:    git_hub::read_json_body(response),
+        }
+    }
 
     // Takes the user name, builds the valid url
     // https://api.github.com/users/:username

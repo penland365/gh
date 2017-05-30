@@ -1,13 +1,16 @@
 use config::Config;
 
-use hyper::client::Request;
-use hyper::header::{Authorization, Bearer, Headers, Accept, qitem, UserAgent};
+use hyper::client::{Request, Response};
+use hyper::header::{Authorization, Bearer, ContentLength, Headers, Accept, qitem, UserAgent};
 use hyper::method::Method;
 use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
 use hyper::net::{Fresh, HttpsConnector};
 use hyper::Url;
 use hyper::status::StatusCode;
 use hyper_native_tls::NativeTlsClient;
+use std::io::Read;
+use serde_json;
+use serde_json::Value as Json;
 
 pub mod orgs;
 pub mod users;
@@ -21,7 +24,7 @@ pub trait GitHubRequest {
 pub struct GitHubResponse {
     pub status: StatusCode,
     pub headers: Headers,
-    pub body: Option<String>,
+    pub body: Option<Json>,
 }
 
 // Adds all headers to make a GitHub Request,
@@ -103,12 +106,54 @@ pub fn build_authed_request_or_die(method: &Method,
     request
 }
 
+// Takes a hyper::client::Request<Fresh>. Starts the request, then
+// sends any associated non-header information. Panics if any error
+// occurrs.
+pub fn start_and_send_request(mut request: Request<Fresh>) -> Response {
+    match request.start() {
+        Ok(x)  => match x.send() {
+            Ok(y)  => y,
+            Err(e) => panic!("Fatal error sending HTTP Request. {}", e),
+        },
+        Err(e) => panic!("Fatal error starting HTTP Request. {}", e),
+    }
+}
+
+// Takes a hyper::client::Headers, and returns the body length as a usize
+// If no Content-Length header is found, we return 0 assuming no body
+fn get_body_length(headers: &Headers) -> usize {
+    match headers.get::<ContentLength>() {
+        Some(l) => l.0 as usize,
+        None    => 0,
+    }
+}
+
+// Takes a hyper::client::Response and reads the body. Assumes a UTF-8 encoded String.
+// Returns an Option<String> depending on what the ContentLength is.
+pub fn read_utf8_body(mut response: Response) -> Option<String> {
+    let length = get_body_length(&response.headers);
+    if length > 0 {
+        let mut body: Vec<u8> = Vec::with_capacity(length);
+        let x = response.read_exact(&mut body).unwrap();
+        Some(String::from_utf8_lossy(&body).into_owned())
+    } else {
+        None
+    }
+}
+
+pub fn read_json_body(mut response: Response) -> Option<Json> {
+    match read_utf8_body(response).map(|s| serde_json::from_str(&s)) {
+        Some(result) => result.ok(),
+        None         => None,
+    }
+}
+
 #[cfg(test)]
 mod tests {
 use config::Config;
 
-use hyper::client::Request;
-use hyper::header::{Accept, Authorization, Bearer, Headers, Host, qitem, UserAgent};
+use hyper::client::{Request, Response};
+use hyper::header::{Accept, Authorization, Bearer, ContentLength, Headers, Host, qitem, UserAgent};
 use hyper::method::Method;
 use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
 use hyper::net::{Fresh, HttpsConnector};
@@ -304,6 +349,22 @@ use super::{add_auth_header, add_base_headers, add_headers};
 
             assert_eq!(req.headers(), result.headers());
         }
+    }
+
+    #[test]
+    fn test_get_body_length_with_header() {
+        let mut headers = Headers::new();
+        let body_length = 71;
+        headers.set(ContentLength(body_length));
+        let result = super::get_body_length(&headers);
+        assert_eq!(result, body_length as usize);
+    }
+
+    #[test]
+    fn test_get_body_length_no_header() {
+        let mut headers = Headers::new();
+        let result = super::get_body_length(&headers);
+        assert_eq!(result, 0 as usize);
     }
 
     fn test_host_header(headers: &Headers) -> () {

@@ -12,6 +12,9 @@ use hyper::status::StatusCode;
 use std::io::Read;
 use std::str::from_utf8;
 
+use serde_json;
+use serde_json::Value as Json;
+
 // GitHub OrgSummary. See https://developer.github.com/v3/orgs/
 // A base GitHub User
 #[derive(Deserialize, Serialize)]
@@ -37,10 +40,14 @@ pub fn get_authed_user_orgs(config: &Config) -> GitHubResponse {
     let mut body = vec![];
     response.read_to_end(&mut body).unwrap();
     let s: String = String::from_utf8_lossy(&body).into_owned();
+    let j: Json = match serde_json::from_str(&s) {
+        Ok(j) => j,
+        Err(e) => panic!("foo"),
+    };
     let github_response = GitHubResponse {
         status: response.status,
         headers: response.headers.clone(),
-        body: Some(s),
+        body: Some(j),
     };
     github_response
 }
@@ -54,10 +61,14 @@ pub fn get_user_public_orgs(username: &str, config: &Config) -> GitHubResponse {
     let mut body = vec![];
     response.read_to_end(&mut body).unwrap();
     let s: String = String::from_utf8_lossy(&body).into_owned();
+    let j: Json = match serde_json::from_str(&s) {
+        Ok(j) => j,
+        Err(e) => panic!("foo"),
+    };
     let github_response = GitHubResponse {
         status: response.status,
         headers: response.headers.clone(),
-        body: Some(s),
+        body: Some(j),
     };
     github_response
 }
