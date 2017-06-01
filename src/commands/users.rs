@@ -30,10 +30,13 @@ pub fn handle(matches: &ArgMatches) -> () {
 }
 
 mod get {
+use evidence::json_ops;
+use super::super::NEW_LINE;
 use clap::ArgMatches;
 use config::load_config;
 use git_hub::{GitHubResponse, users};
 use hyper::status::StatusCode;
+use serde_json;
 use serde_json::Value as Json;
 
     pub fn handle(matches: &ArgMatches) -> () {
@@ -61,23 +64,25 @@ use serde_json::Value as Json;
     }
 
     fn format_output(body: &Json, is_json: bool) -> String {
-        "".to_string()
-        //let orgs: Vec<OrgSummary> = json_ops::from_json_or_die(body, DESERIALIZE_ORG_SUMMARY);
-        //if is_json {
-        //    json_ops::to_pretty_json_or_die(&orgs, SERIALIZE_ORG_SUMMARY)
-        //} else {
-        //    let mut output = String::with_capacity(100);
-        //    let header = format!("{0: <10} {1: <10} {2: <45} {3: <30}", "login", "id", "url", "description");
-        //    output.push_str(&header);
-        //    output.push_str(NL);
-        //    for org in orgs {
-        //        let line = format!("{0: <10} {1: <10} {2: <45} {3: <30}",
-        //                           org.login, org.id, org.url, org.description);
-        //        output.push_str(&line);
-        //        output.push_str(NL);
-        //    }
-        //    output
-        //}
+        if is_json {
+            match serde_json::to_string_pretty(body) {
+                Ok(s)  => s,
+                Err(e) => "asdf".to_string(),
+            }
+        } else {
+            let mut output = String::with_capacity(100);
+            let header = format!("{0: <12} {1: <10} {2: <45}", "login", "id", "url");
+            output.push_str(&header);
+            output.push_str(NEW_LINE);
+
+            let login = json_ops::get(&body, "login");
+            let id    = json_ops::get(&body, "id");
+            let url   = json_ops::get(&body, "url");
+            let line  = format!("{0: <12} {1: <10} {2: <45}", login, id, url);
+            output.push_str(&line);
+            output.push_str(NEW_LINE);
+            output
+        }
     }
 
     fn build_200_ok_no_string_body_output() -> String {

@@ -36,6 +36,7 @@ pub fn handle(matches: &ArgMatches) -> () {
 }
 
 mod list {
+use super::super::NEW_LINE;
 use clap::ArgMatches;
 use config::load_config;
 use evidence::json_ops;
@@ -43,9 +44,6 @@ use git_hub::{GitHubResponse, orgs};
 use hyper::status::StatusCode;
 use git_hub::orgs::OrgSummary;
 use serde_json::Value as Json;
-
-    #[cfg(windows)] pub const NL: &'static str = "\r\n";
-    #[cfg(not(windows))] pub const NL: &'static str = "\n";
 
     pub fn handle(matches: &ArgMatches) -> () {
         let response = match matches.value_of("user") {
@@ -85,12 +83,12 @@ use serde_json::Value as Json;
             let mut output = String::with_capacity(100);
             let header = format!("{0: <10} {1: <10} {2: <45} {3: <30}", "login", "id", "url", "description");
             output.push_str(&header);
-            output.push_str(NL);
+            output.push_str(NEW_LINE);
             for org in orgs {
                 let line = format!("{0: <10} {1: <10} {2: <45} {3: <30}",
                                    org.login, org.id, org.url, org.description);
                 output.push_str(&line);
-                output.push_str(NL);
+                output.push_str(NEW_LINE);
             }
             output
         }

@@ -37,6 +37,26 @@ use serde::ser::Serialize;
         }
     }
 
+    pub fn get(json: &Json, key: &str) -> String {
+        if json[key].is_null() {
+            "".to_owned()
+        } else {
+            if json[key].is_string() {
+                match json[key].as_str() {
+                    Some(s) => s.to_owned(),
+                    None    => "".to_owned(),
+                }
+            } else if json[key].is_i64() {
+                match json[key].as_i64() {
+                    Some(i) => i.to_string(),
+                    None    => "".to_owned(),
+                }
+            } else {
+                "".to_owned()
+            }
+        }
+    }
+
     #[cfg(test)]
     mod tests {
         #[derive(Debug, Deserialize, PartialEq, Serialize)]
