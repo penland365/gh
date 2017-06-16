@@ -28,7 +28,7 @@ mod resources;
 mod evidence;
 
 fn main() {
-    let mut app = App::new("gh")
+    let app = App::new("gh")
         //.subcommand(commands::orgs::SUBCOMMAND())
         //.subcommand(commands::pullreqs::SUBCOMMAND())
         .subcommand(commands::users::sub_command())
@@ -95,7 +95,6 @@ fn main() {
     });
 }
 
-
 type GithubResult = Result<String, GithubError>;
 #[derive(Debug)]
 pub struct GithubError {
@@ -107,8 +106,9 @@ impl fmt::Display for GithubError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match (self.status_code, &self.help_str) {
             (None, &None)                     => write!(f, "(None, None)"),
-            (Some(code), &None)               => write!(f, "(Some(code), None)"),
-            (Some(code), &Some(ref help_str)) => write!(f, "(Some(code), Some(help_str))"),
+            (Some(_), &None)               => write!(f, "(Some(code), None)"),
+            //(Some(code), &Some(ref help_str)) => write!(f, "(Some(code), Some(help_str))"),
+            (Some(_), &Some(_)) => write!(f, "(Some(code), Some(help_str))"),
             (None, &Some(ref help_str))       => write!(f, "{}", &help_str),
         }
     }

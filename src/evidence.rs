@@ -1,14 +1,3 @@
-use std::io::Write;
-
-#[macro_use]
-macro_rules! println_stderr(
-    ($($arg:tt)*) => { {
-        let r = writeln!(&mut ::std::io::stderr(), $($arg)*);
-        r.expect("failed printing to stderr");
-    } }
-);
-
-//
 // A few commonly used wrapper functions around Serde JSON
 // to encapsulate common behaviour
 pub mod json_ops {
@@ -16,7 +5,7 @@ use serde_json;
 use serde_json::Value as Json;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
-
+//
     pub fn from_json_or_die<T: DeserializeOwned>(j: &Json, error_msg: &str) -> T {
         let t: T = match serde_json::from_value(j.clone()) {
             Ok(t)  => t,
@@ -51,7 +40,7 @@ use serde::ser::Serialize;
     pub fn get(json: &Json, key: &str) -> String {
         if json[key].is_null() {
             "".to_owned()
-        } else {
+      } else {
             if json[key].is_string() {
                 match json[key].as_str() {
                     Some(s) => s.to_owned(),
@@ -59,7 +48,7 @@ use serde::ser::Serialize;
                 }
             } else if json[key].is_i64() {
                 match json[key].as_i64() {
-                    Some(i) => i.to_string(),
+                  Some(i) => i.to_string(),
                     None    => "".to_owned(),
                 }
             } else {
