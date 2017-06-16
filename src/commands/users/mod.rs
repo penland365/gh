@@ -1,4 +1,5 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
+use {GithubError, GithubResult};
 
 pub fn sub_command<'a, 'b>() -> App<'a, 'b> {
     SubCommand::with_name("users")
@@ -21,10 +22,11 @@ pub fn sub_command<'a, 'b>() -> App<'a, 'b> {
                                              .takes_value(true)))
 }
 
-pub fn handle(matches: &ArgMatches) -> () {
+pub fn handle(matches: &ArgMatches) -> GithubResult {
     match matches.subcommand() {
-        ("get", Some(get_matches)) => get::handle(get_matches),
-        ("", None)                 => println!("No subcommand was used for users"),
+        ("get", Some(get_matches)) => Ok("asdf".to_owned()),//get::handle(get_matches),
+        ("", None)                 => Err(GithubError{status_code: None,
+            help_str: Some("qwer".to_owned())}),
         (_, _)                     => unreachable!()
     }
 }
@@ -40,15 +42,20 @@ use serde_json;
 use serde_json::Value as Json;
 
     pub fn handle(matches: &ArgMatches) -> () {
-        let response = match matches.value_of("user") {
-            None       => users::get_authed_user::get(&load_config()),
-            Some(user) => users::get_single_user::get_user(user, &load_config()),
+        let is_json = match matches.value_of("format") {
+            None    => false,
+            Some(f) => f == "json",
         };
-        let is_json  = match matches.value_of("format") {
-            None         => false,
-            Some(format) => format == "json"
-        };
-        let output = &build_output(&response, is_json);
+        match matches.value_of("user") {
+            None       => (), //users::get_authed_user::get(&load_config()),
+            Some(user) => single_user(&user, is_json),
+        }
+    }
+
+    // handle Single User
+    fn single_user(user: &str, is_json: bool) -> () {
+        let response = users::get_single_user::get_user(user, &load_config());
+        let output   = build_single_user_output(&response, is_json);
         println!("{}", output);
     }
 
@@ -61,6 +68,16 @@ use serde_json::Value as Json;
             },
             x                        => format!("Unexpected Http Response Code {}", x)
         }
+    }
+
+    fn build_single_user_output(response: &GitHubResponse, is_json: bool) -> String {
+//        evidence::println_stderr("asdf");
+        "".to_owned()
+        //match response.status {
+        //    StatusCode::NotFound => 
+    
+        //}
+        //"".to_owned()
     }
 
     fn format_output(body: &Json, is_json: bool) -> String {

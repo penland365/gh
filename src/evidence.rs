@@ -1,3 +1,14 @@
+use std::io::Write;
+
+#[macro_use]
+macro_rules! println_stderr(
+    ($($arg:tt)*) => { {
+        let r = writeln!(&mut ::std::io::stderr(), $($arg)*);
+        r.expect("failed printing to stderr");
+    } }
+);
+
+//
 // A few commonly used wrapper functions around Serde JSON
 // to encapsulate common behaviour
 pub mod json_ops {
