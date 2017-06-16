@@ -1,9 +1,3 @@
-use config::Config;
-use git_hub;
-use git_hub::GitHubResponse;
-use hyper::method::Method;
-use std::io::Read;
-
 // GitHub Public User
 // See https://developer.github.com/v3/users/#get-a-single-user
 // for more information.
@@ -53,7 +47,7 @@ use hyper::net::Fresh;
     // for more information.
     pub fn get_user(username: &str, config: &Config) -> GitHubResponse {
         let request      = build_get_user_request(username, config);
-        let mut response = git_hub::start_and_send_request(request);
+        let response = git_hub::start_and_send_request(request);
         GitHubResponse {
             status:  response.status.clone(),
             headers: response.headers.clone(),
@@ -124,9 +118,10 @@ use hyper::net::Fresh;
     // GET /user. The authenticated GitHub user private information. See
     // https://developer.github.com/v3/users/#get-the-authenticated-user
     // for more information.
+    #[allow(dead_code)]
     pub fn get(config: &Config) -> GitHubResponse {
         let request      = build_request(config);
-        let mut response = git_hub::start_and_send_request(request);
+        let response = git_hub::start_and_send_request(request);
         GitHubResponse {
             status:  response.status.clone(),
             headers: response.headers.clone(),
@@ -138,6 +133,7 @@ use hyper::net::Fresh;
 
     // Takes the username and Config, builds a valid
     // hyper::Request<Fresh>
+    #[allow(dead_code)]
     fn build_request(config: &Config) -> Request<Fresh> {
         let url       = git_hub::build_url_or_die(AUTH_USER_URL);
         let connector = git_hub::connector();

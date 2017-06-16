@@ -1,5 +1,6 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 use {GithubError, GithubResult};
+use std::str;
 
 pub fn sub_command<'a, 'b>() -> App<'a, 'b> {
     SubCommand::with_name("users")
@@ -22,11 +23,20 @@ pub fn sub_command<'a, 'b>() -> App<'a, 'b> {
                                              .takes_value(true)))
 }
 
+// handle the users subcommand from main
 pub fn handle(matches: &ArgMatches) -> GithubResult {
     match matches.subcommand() {
-        ("get", Some(get_matches)) => Ok("asdf".to_owned()),//get::handle(get_matches),
-        ("", None)                 => Err(GithubError{status_code: None,
-            help_str: Some("qwer".to_owned())}),
+        ("get", Some(get_matches)) => get::handle(get_matches),
+        ("", None)                 => {
+            let sub_cmd = sub_command();
+            let mut vec: Vec<u8> = Vec::new();
+            sub_cmd.write_help(&mut vec).ok().expect("failed to write to Vector<u8>");
+            let app_str = str::from_utf8(&vec).unwrap();
+            Err(GithubError{
+                status_code: None,
+                help_str: Some(app_str.to_owned())
+            })
+        },
         (_, _)                     => unreachable!()
     }
 }
@@ -37,28 +47,30 @@ use super::super::NEW_LINE;
 use clap::ArgMatches;
 use config::load_config;
 use git_hub::{GitHubResponse, users};
+use GithubResult;
 use hyper::status::StatusCode;
 use serde_json;
 use serde_json::Value as Json;
 
-    pub fn handle(matches: &ArgMatches) -> () {
+    pub fn handle(matches: &ArgMatches) -> GithubResult {
         let is_json = match matches.value_of("format") {
             None    => false,
             Some(f) => f == "json",
         };
         match matches.value_of("user") {
-            None       => (), //users::get_authed_user::get(&load_config()),
+            None       => Ok("asdf".to_owned()), //users::get_authed_user::get(&load_config()),
             Some(user) => single_user(&user, is_json),
         }
     }
 
     // handle Single User
-    fn single_user(user: &str, is_json: bool) -> () {
+    fn single_user(user: &str, is_json: bool) -> GithubResult {
         let response = users::get_single_user::get_user(user, &load_config());
         let output   = build_single_user_output(&response, is_json);
-        println!("{}", output);
+        Ok(output)
     }
 
+    #[allow(dead_code)]
     fn build_output(response: &GitHubResponse, is_json: bool) -> String {
         match response.status {
             StatusCode::NotFound     => "".to_owned(),
@@ -80,11 +92,12 @@ use serde_json::Value as Json;
         //"".to_owned()
     }
 
+    #[allow(dead_code)]
     fn format_output(body: &Json, is_json: bool) -> String {
         if is_json {
             match serde_json::to_string_pretty(body) {
                 Ok(s)  => s,
-                Err(e) => "asdf".to_string(),
+                Err(_) => "asdf".to_string(),
             }
         } else {
             let mut output = String::with_capacity(100);
@@ -102,10 +115,11 @@ use serde_json::Value as Json;
         }
     }
 
+    #[allow(dead_code)]
     fn build_200_ok_no_string_body_output() -> String {
         format!("An unknown error occurred. GitHub responded with {}, but no string body was found.",
                 StatusCode::Ok)
     }
 
-    const DESERIALIZE_ORG_SUMMARY: &'static str = "Error deserializing GitHub Organization Summary JSON.";
+    //const DESERIALIZE_ORG_SUMMARY: &'static str = "Error deserializing GitHub Organization Summary JSON.";
 }

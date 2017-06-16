@@ -1,20 +1,11 @@
 use config::Config;
 
-use git_hub;
 use git_hub::{GitHubRequest, GitHubResponse};
 
-use hyper::Url;
-use hyper::client::Request;
-use hyper::method::Method;
-use hyper::net::{Fresh, HttpsConnector};
-use hyper::status::StatusCode;
-
 use std::io::Read;
-use std::str::from_utf8;
 
 use serde_json;
 use serde_json::Value as Json;
-
 // GitHub OrgSummary. See https://developer.github.com/v3/orgs/
 // A base GitHub User
 #[derive(Deserialize, Serialize)]
@@ -32,6 +23,7 @@ pub struct OrgSummary {
     pub description: String
 }
 
+#[allow(dead_code)]
 pub fn get_authed_user_orgs(config: &Config) -> GitHubResponse {
     let request = requests::ListOrgs{
         config: config.clone(),
@@ -42,7 +34,7 @@ pub fn get_authed_user_orgs(config: &Config) -> GitHubResponse {
     let s: String = String::from_utf8_lossy(&body).into_owned();
     let j: Json = match serde_json::from_str(&s) {
         Ok(j) => j,
-        Err(e) => panic!("foo"),
+        Err(_) => panic!("foo"),
     };
     let github_response = GitHubResponse {
         status: response.status,
@@ -52,6 +44,7 @@ pub fn get_authed_user_orgs(config: &Config) -> GitHubResponse {
     github_response
 }
 
+#[allow(dead_code)]
 pub fn get_user_public_orgs(username: &str, config: &Config) -> GitHubResponse {
     let request = requests::ListUserOrganizations {
         username: username.to_owned(),
@@ -63,7 +56,7 @@ pub fn get_user_public_orgs(username: &str, config: &Config) -> GitHubResponse {
     let s: String = String::from_utf8_lossy(&body).into_owned();
     let j: Json = match serde_json::from_str(&s) {
         Ok(j) => j,
-        Err(e) => panic!("foo"),
+        Err(_) => panic!("foo"),
     };
     let github_response = GitHubResponse {
         status: response.status,
@@ -80,14 +73,14 @@ use git_hub::{add_headers, connector, GitHubRequest};
 use hyper::Url;
 use hyper::client::Request;
 use hyper::method::Method;
-use hyper::net::{Fresh, HttpsConnector};
-use hyper::status::StatusCode;
+use hyper::net::Fresh;
 
 
     // Lists organizations for the authenticated user
     // GET /user/orgs
     // See https://developer.github.com/v3/orgs/#list-your-organizations
     // for more information
+    #[allow(dead_code)]
     pub struct ListOrgs {
         pub config: Config
     }
@@ -110,6 +103,7 @@ use hyper::status::StatusCode;
     // GET /users/:username/orgs
     // See https://developer.github.com/v3/orgs/#list-user-organizations
     // for more infromation
+    #[allow(dead_code)]
     pub struct ListUserOrganizations {
         pub username: String,
         pub config: Config

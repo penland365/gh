@@ -5,7 +5,8 @@ use serde_json;
 use serde_json::Value as Json;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
-//
+
+    #[allow(dead_code)]
     pub fn from_json_or_die<T: DeserializeOwned>(j: &Json, error_msg: &str) -> T {
         let t: T = match serde_json::from_value(j.clone()) {
             Ok(t)  => t,
@@ -14,6 +15,7 @@ use serde::ser::Serialize;
         t
     }
 
+    #[allow(dead_code)]
     pub fn from_str_or_die<T: DeserializeOwned>
         (s: &str, error_msg: &str) -> T {
         let t: T = match serde_json::from_str(s) {
@@ -26,6 +28,7 @@ use serde::ser::Serialize;
         t
     }
 
+    #[allow(dead_code)]
     pub fn to_pretty_json_or_die<T: Serialize>
         (t: &T, error_msg: &str) -> String {
         match serde_json::to_string_pretty(t) {
@@ -37,6 +40,7 @@ use serde::ser::Serialize;
         }
     }
 
+    #[allow(dead_code)]
     pub fn get(json: &Json, key: &str) -> String {
         if json[key].is_null() {
             "".to_owned()

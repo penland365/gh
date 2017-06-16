@@ -8,7 +8,6 @@ use std::io::{BufReader, BufWriter, Write};
 use evidence::json_ops;
 
 use serde_json;
-use serde_json::Error;
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -56,6 +55,7 @@ pub fn load_config() -> Config {
     config
 }
 
+#[allow(dead_code)]
 pub fn show_config(matches: &ArgMatches) -> () {
     //let credentials_path = {
     //    let home_dir = get_home_dir();
@@ -92,11 +92,13 @@ pub fn show_config(matches: &ArgMatches) -> () {
     }
 }
 
+#[allow(dead_code)]
 fn print_config(config: &Config) -> () {
     println!("{0: <10} {1: <40}", "login", "access token");
     println!("{0: <10} {1: <10}", config.username, config.access_token);
 }
 
+#[allow(dead_code)]
 pub fn set_config(matches: &ArgMatches) -> () {
     let config = config_from_args(matches);
     let config_json = match serde_json::to_string_pretty(&config) {
@@ -145,6 +147,7 @@ fn get_home_dir() -> PathBuf {
 // Ensures the config directory exists. Creates the directory if it doesn't.
 // $HOME/.config is the expected config directory. Returns the
 // PathBuf after ensure it exists.
+#[allow(dead_code)]
 fn ensure_config_dir_exists(home_path: PathBuf) -> PathBuf {
     let config_path = {
         let mut xs = home_path;
@@ -160,6 +163,7 @@ fn ensure_config_dir_exists(home_path: PathBuf) -> PathBuf {
 // Ensures the gh directory exists. Creates the directory if it doesn't.
 // $HOME/.config/gh is the expected gh directory. Returns the
 // PathBuf after ensure it exists.
+#[allow(dead_code)]
 fn ensure_gh_dir_exists(config_path: PathBuf) -> PathBuf {
     let gh_path = {
         let mut xs = config_path;

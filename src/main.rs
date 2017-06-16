@@ -15,7 +15,7 @@ extern crate hyper_native_tls;
 #[macro_use]
 extern crate version;
 
-use clap::{App, Arg, SubCommand};
+use clap::App;
 use hyper::status::StatusCode;
 use std::error::Error;
 use std::{fmt, str};

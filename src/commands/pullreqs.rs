@@ -1,9 +1,7 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
-use config;
 
-use serde_json;
-
-pub fn SUBCOMMAND<'a, 'b>() -> App<'a, 'b> {
+#[allow(dead_code)]
+pub fn sub_command<'a, 'b>() -> App<'a, 'b> {
     SubCommand::with_name("pullreq")
                 .about("List, Get, Create, Edit, and Merge a GitHub Pull Request.")
                 .version(version!())
@@ -42,16 +40,21 @@ pub fn SUBCOMMAND<'a, 'b>() -> App<'a, 'b> {
 
 }
 
+#[allow(dead_code)]
 pub fn handle(matches: &ArgMatches) -> () {
     match matches.subcommand() {
-        ("list", Some(list_matches)) => list_pull_reqs(list_matches) ,
-        ("create", Some(create_matches)) => create_pull_request(create_matches),
+        //("list", Some(list_matches)) => list_pull_reqs(list_matches) ,
+        ("list", Some(_)) => list_pull_reqs() ,
+        //("create", Some(create_matches)) => create_pull_request(create_matches),
+        ("create", Some(_)) => create_pull_request(),
         ("", None)                   => println!("No subcommand was used for orgs"),
         (_, _)                       => unreachable!()
     }
 }
 
-fn list_pull_reqs(matches: &ArgMatches) -> () {
+#[allow(dead_code)]
+fn list_pull_reqs() -> () {
+//fn list_pull_reqs(matches: &ArgMatches) -> () {
    //let owner = matches.value_of("owner").unwrap().to_string();
    //let repo = matches.value_of("repo").unwrap().to_string();
    //let url = "https://api.github.com/repos/".to_string() +
@@ -72,7 +75,9 @@ struct NewPullRequest {
     pub base: String
 }
 
-fn create_pull_request(matches: &ArgMatches) -> () {
+//fn create_pull_request(matches: &ArgMatches) -> () {
+#[allow(dead_code)]
+fn create_pull_request() -> () {
    //let owner = matches.value_of("owner").unwrap().to_string();
    //let repo = matches.value_of("repo").unwrap().to_string();
    //let url = "https://api.github.com/repos/".to_string() +

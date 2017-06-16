@@ -1,12 +1,7 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
-use config;
-use git_hub::{GitHubResponse, orgs};
 
-use serde_json;
-use serde_json::Value as Json;
-use serde_json::Error;
-
-pub fn SUBCOMMAND<'a, 'b>() -> App<'a, 'b> {
+#[allow(dead_code)]
+pub fn sub_command<'a, 'b>() -> App<'a, 'b> {
     SubCommand::with_name("orgs")
                 .about("List, Get, Edit your GitHub Organizations")
                 .version(version!())
@@ -27,6 +22,7 @@ pub fn SUBCOMMAND<'a, 'b>() -> App<'a, 'b> {
                                              .takes_value(true)))
 }
 
+#[allow(dead_code)]
 pub fn handle(matches: &ArgMatches) -> () {
     match matches.subcommand() {
         ("list", Some(list_matches)) => list::handle(list_matches),
@@ -45,6 +41,7 @@ use hyper::status::StatusCode;
 use git_hub::orgs::OrgSummary;
 use serde_json::Value as Json;
 
+    #[allow(dead_code)]
     pub fn handle(matches: &ArgMatches) -> () {
         let response = match matches.value_of("user") {
             None       => orgs::get_authed_user_orgs(&load_config()),
