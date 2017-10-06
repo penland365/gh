@@ -5,3 +5,7 @@ debug
 gh
 *.swp
 *.rustfmt
+
+# ctags
+tags
+rusty-tags.vi

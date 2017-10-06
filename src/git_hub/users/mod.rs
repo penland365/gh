@@ -82,7 +82,6 @@ use hyper::net::Fresh;
     mod tests {
     use config::Config;
     use git_hub;
-
         #[test]
         fn test_build_get_user_endpoint() {
             assert_eq!(super::build_get_user_endpoint("octocat"), TEST_URL);

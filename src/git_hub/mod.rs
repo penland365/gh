@@ -8,6 +8,7 @@ use hyper::net::{Fresh, HttpsConnector};
 use hyper::Url;
 use hyper::status::StatusCode;
 use hyper_native_tls::NativeTlsClient;
+use std::io::Read;
 use serde_json;
 use serde_json::Value as Json;
 
@@ -129,14 +130,11 @@ fn get_body_length(headers: &Headers) -> usize {
 
 // Takes a hyper::client::Response and reads the body. Assumes a UTF-8 encoded String.
 // Returns an Option<String> depending on what the ContentLength is.
-pub fn read_utf8_body(response: Response) -> Option<String> {
+pub fn read_utf8_body(mut response: Response) -> Option<String> {
     let length = get_body_length(&response.headers);
     if length > 0 {
-        let buffer = String::with_capacity(length);
-        //let num_bytes = match response.read_to_string(&mut buffer) {
-        //    Ok(x)  => x,
-        //    Err(e) => panic!("Fatal error reading response body {}", e),
-        //};
+        let mut buffer = String::with_capacity(length);
+        let _ = response.read_to_string(&mut buffer).expect("Fatal error reading response body");
         Some(buffer)
     } else {
         None
@@ -144,9 +142,9 @@ pub fn read_utf8_body(response: Response) -> Option<String> {
 }
 
 pub fn read_json_body(response: Response) -> Option<Json> {
-    match read_utf8_body(response).map(|s| serde_json::from_str(&s)) {
-        Some(result) => result.ok(),
-        None         => None,
+    match read_utf8_body(response) {
+        Some(string) => serde_json::from_str(&string).ok(),
+        None         => None
     }
 }
 

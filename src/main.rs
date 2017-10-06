@@ -26,6 +26,7 @@ mod config;
 mod git_hub;
 mod resources;
 mod evidence;
+mod util;
 
 fn main() {
     let app = App::new("gh")
